@@ -1,5 +1,6 @@
 from docker import APIClient
 from os import environ
+from subprocess import call
 
 _docker = APIClient(environ['DOCKER_SOCKET'], 'auto')
 
@@ -12,5 +13,12 @@ def _container_map(container):
         'username': container['Labels']['username']
     }
 
+def create(username, name, port, password):
+    return call([
+        'docker', 'run', '-d', '-l' f'username={username}', '--name', name,
+        '-p', f'{port}:6379', 'redis:alpine', 'redis-server', '--requirepass',
+        password
+    ])
+
 def get_instances():
-    return (_container_map(container) for container in _docker.containers())
+    return map(_container_map, _docker.containers())
