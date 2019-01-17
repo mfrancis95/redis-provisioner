@@ -17,7 +17,9 @@ def create(username, name, port, password):
         container = _docker.create_container(
             'redis:alpine', command = f'redis-server --requirepass {password}',
             detach = True,
-            host_config = _docker.create_host_config(port_bindings = {6379: port}),
+            host_config = _docker.create_host_config(port_bindings = {
+                6379: port
+            }),
             labels = {'username': username}, name = name
         )
         _docker.start(container['Id'])
@@ -26,6 +28,13 @@ def create(username, name, port, password):
         if error.status_code == 500:
             _docker.remove_container(container['Id'])
     return False
+
+def delete(id):
+    try:
+        _docker.remove_container(id, force = True)
+    except:
+        return False
+    return True
 
 def get_instances():
     return map(_container_map, _docker.containers())
